@@ -1,49 +1,30 @@
 {
-  description = "example-node-js-flake";
-
-  inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
-  };
+  # Override nixpkgs to use the latest set of node packages
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/master";
 
   outputs = {
     self,
     nixpkgs,
     flake-utils,
   }:
-    flake-utils.lib.eachSystem ["x86_64-linux"] (
-      system: let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
+    flake-utils.lib.eachDefaultSystem
+    (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+      };
+    in {
+      devShells.default = pkgs.mkShell {
+        buildInputs = [
+          # You can set the major version of Node.js to a specific one instead
+          # of the default version
+          pkgs.nodejs_20
 
-        buildNodeJs = pkgs.callPackage "${nixpkgs}/pkgs/development/web/nodejs/nodejs.nix" {
-          python = pkgs.python3;
-        };
+          # You can choose pnpm, yarn, or none (npm).
+          pkgs.yarn
 
-        nodejs = buildNodeJs {
-          enableNpm = true;
-          version = "20.4.0";
-          sha256 = "sha256-Cb0Lc8UmtjwCnV3f2IXRCWLnrYfJdblFg8H4zpDuU0g=";
-        };
-      in rec {
-        flakedPkgs = pkgs;
-
-        # enables use of `nix shell`
-        devShell = pkgs.mkShell {
-          # add things you want in your shell here
-          buildInputs = with pkgs; [
-            nodejs
-          ];
-        };
-      }
-    );
-
-  # nixConfig = {
-  #   extra-substituters = [
-  #     "https://cache.garnix.io"
-  #   ];
-  #   extra-trusted-public-keys = [
-  #     "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
-  #   ];
-  # };
+          pkgs.nodePackages.typescript
+          pkgs.nodePackages.typescript-language-server
+        ];
+      };
+    });
 }
