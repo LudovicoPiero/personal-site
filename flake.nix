@@ -20,7 +20,7 @@
           pkgs.nodejs_20
 
           # You can choose pnpm, yarn, or none (npm).
-          pkgs.yarn
+          pkgs.nodePackages.npm
 
           pkgs.nodePackages.typescript
           pkgs.nodePackages.typescript-language-server
